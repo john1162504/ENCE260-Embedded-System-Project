@@ -15,6 +15,7 @@
 #include "pacer.h"
 #include "ledmat.h"
 #include "display.h"
+#include "tinygl.h"
 
 
 /** Define pacer frequency, runs n loop in one seond. Where n is the value of PACER_FREQUENCY */
@@ -46,29 +47,11 @@ static pio_t cols[] =
 };
 
 
-/** Config led matrix */
-void ledmat_init(void)
-{
-    uint8_t row;
-    uint8_t col;
-
-    for (row = 0; row < NUM_OF_ROW; row++)
-    {
-        pio_config_set (ledmat_rows[row], PIO_OUTPUT_HIGH);
-        pio_output_high (ledmat_rows[row]);
-    }
-
-    for (col = 0; col < NUM_OF_COL; col++)
-    {
-        pio_config_set (ledmat_cols[col], PIO_OUTPUT_HIGH);
-        pio_output_high (ledmat_cols[col]);
-    }
-}
 
 /** Initiate barriers at the start of the game */
 void initiate_barriers()
-{
-
+{  
+    
 }
 
 /** Launch missile when callled*/
@@ -83,9 +66,21 @@ void missile_receive()
 
 } 
 
+/** Actions when missile hit an object(player or barrier, 
+     missiles will not collide as it would make the game too long)
+     TBD */
+void missile_hit()
+{
+
+}
+
+void display_player()
+{
+
+}
 
 /** Move gun/player when navswitch push */
-void gun_move() 
+void player_move() 
 {
 
 }
@@ -96,13 +91,7 @@ void game_over()
 
 }
 
-/** Actions when missile hit an object(player or barrier, 
-     missiles will not collide as it would make the game too long)
-     TBD */
-void missile_hit()
-{
 
-}
 
 
 
@@ -110,15 +99,35 @@ void missile_hit()
 int main(void)
 {
     system_init();
-    pacer_init(1000);
+    pacer_init(PACER_FREQUENCY);
     ledmat_init();
+    navswitch_init();
+    tinygl_init(1000);
+    tinygl_point_t player = tinygl_point(4,3);
+    tinygl_point_t b1 = tinygl_point(1,0);
+    tinygl_point_t b2 = tinygl_point(1,2);
+    tinygl_point_t b3 = tinygl_point(1,4);
+    tinygl_point_t b4 = tinygl_point(1,6);
+    tinygl_point_t b5 = tinygl_point(3,2);
+    tinygl_point_t b6 = tinygl_point(3,4);
+    tinygl_pixel_set(player,1);
+    tinygl_draw_line(b1,b2,1);
+    tinygl_draw_line(b3,b4,1);
+    tinygl_draw_line(b5,b6,1);
+
+
+
+
+
 
 
 
 
     while (1)
     {
-        peacer_wait();
+        pacer_wait();
+        tinygl_update();
+
 
 
 
