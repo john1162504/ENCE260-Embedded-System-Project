@@ -24,8 +24,8 @@
 /** Define number of rows and columns */
 #define NUM_OF_ROW 7
 #define NUM_OF_COL 5
-enum Obejct_type {PLAYER, BARRIER, MISSILE};
-enum State {IDLE = 0, ACTIVE = 1};
+typedef enum {PLAYER, BARRIER, MISSILE} Obejct_type;
+typedef enum {IDLE = 0, ACTIVE = 1} State;
 
 typedef struct 
 {
@@ -95,13 +95,13 @@ typedef struct
 
 // }
 
-void missile_update(tinygl_point_t missile)
-{
+// void missile_update(game_object_t missile)
+// {
 
-    missile.x -= 1;
-    tinygl_draw_point(missile,1);
+//     missile.pos.x -= 1;
+//     tinygl_draw_point(missile.pos,1);
 
-}
+// }
 
 // void display_player()
 // {
@@ -166,8 +166,7 @@ int main(void)
         pacer_wait();
         tinygl_update();
         navswitch_ticks++;
-        
-
+        missile_tick++;
 
         if (navswitch_ticks > 50)
         {
@@ -176,10 +175,16 @@ int main(void)
 
             if (navswitch_push_event_p(NAVSWITCH_PUSH))
             {
+                if (missile.status == 0) {
+                missile.status = 1;
                 missile.pos = get_pos(player);
-                missile.pos.y -= 1;
+                missile.pos.x -= 1;
                 tinygl_draw_point(missile.pos,1);
-                continue;
+                missile_tick = 0;
+                }
+                else {
+                    continue;
+                }
             } else {
                 if (navswitch_push_event_p(NAVSWITCH_NORTH))
                 {
@@ -204,10 +209,16 @@ int main(void)
         }
         if (missile_tick > 500)
         {
-            tinygl_draw_point(missile,0);
+            missile_tick = 0;
             if (missile.status == 1)
-            {
-                missile_update(missile);
+            {   
+                tinygl_draw_point(missile.pos,0);
+                missile.pos.x -= 1;
+                tinygl_draw_point(missile.pos,1);
+                if (missile.pos.x < 0) 
+                {
+                    missile.status = 0;
+                }
             }
         }
 
