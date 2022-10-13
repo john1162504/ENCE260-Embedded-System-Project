@@ -24,90 +24,117 @@
 /** Define number of rows and columns */
 #define NUM_OF_ROW 7
 #define NUM_OF_COL 5
+enum Obejct_type {PLAYER, BARRIER, MISSILE};
+enum State {IDLE = 0, ACTIVE = 1};
 
-/** Define 2D array to store occupied tokens with respect of player 1 and player2
- 0 means avilible
- 1 means occupied
-*/
-
-uint8_t player1 [NUM_OF_ROW][NUM_OF_COL] = {0};
-uint8_t player2 [NUM_OF_ROW][NUM_OF_COL] = {0};
-
-
-/** Define PIO pins for led matrix */
-static pio_t rows[] =
+typedef struct 
 {
-    LEDMAT_ROW1_PIO, LEDMAT_ROW2_PIO, LEDMAT_ROW3_PIO, LEDMAT_ROW4_PIO,
-    LEDMAT_ROW5_PIO, LEDMAT_ROW6_PIO, LEDMAT_ROW7_PIO
-};
-static pio_t cols[] =
+    Obejct_type type;
+    State status;
+    tinygl_point_t pos;
+
+} game_object_t;
+
+
+
+
+
+
+// /** Define PIO pins for led matrix */
+// static pio_t rows[] =
+// {
+//     LEDMAT_ROW1_PIO, LEDMAT_ROW2_PIO, LEDMAT_ROW3_PIO, LEDMAT_ROW4_PIO,
+//     LEDMAT_ROW5_PIO, LEDMAT_ROW6_PIO, LEDMAT_ROW7_PIO
+// };
+// static pio_t cols[] =
+// {
+//     LEDMAT_COL1_PIO, LEDMAT_COL2_PIO, LEDMAT_COL3_PIO,
+//     LEDMAT_COL4_PIO, LEDMAT_COL5_PIO
+// };
+
+
+
+// /** Initiate barriers at the start of the game */
+// void initiate_barriers(void)
+// {  
+//     tinygl_point_t b1 = tinygl_point(1,0);
+//     tinygl_point_t b2 = tinygl_point(1,2);
+//     tinygl_point_t b3 = tinygl_point(1,4);
+//     tinygl_point_t b4 = tinygl_point(1,6);
+//     tinygl_point_t b5 = tinygl_point(3,2);
+//     tinygl_point_t b6 = tinygl_point(3,4);
+//     tinygl_draw_line(b1,b2,1);
+//     tinygl_draw_line(b3,b4,1);
+//     tinygl_draw_line(b5,b6,1);
+// }
+
+// /** Turn off barrier when hit */
+
+// void destory_barrier(uint8_t x_pos, uint8_t y_pos)
+// {
+
+// }
+
+// /** Launch missile when callled*/
+// void missile_launch(uint8_t row, uint8_t col)
+// {
+
+// }
+
+// /** Actions after missile "sinal" received from other device TBD */
+// void missile_receive()
+// {
+
+// } 
+
+// /** Actions when missile hit an object(player or barrier, 
+//      missiles will not collide as it would make the game too long)
+//      TBD */
+// void missile_hit()
+// {
+
+// }
+
+void missile_update(tinygl_point_t missile)
 {
-    LEDMAT_COL1_PIO, LEDMAT_COL2_PIO, LEDMAT_COL3_PIO,
-    LEDMAT_COL4_PIO, LEDMAT_COL5_PIO
-};
 
-
-
-/** Initiate barriers at the start of the game */
-void initiate_barriers()
-{  
-    tinygl_point_t b1 = tinygl_point(1,0);
-    tinygl_point_t b2 = tinygl_point(1,2);
-    tinygl_point_t b3 = tinygl_point(1,4);
-    tinygl_point_t b4 = tinygl_point(1,6);
-    tinygl_point_t b5 = tinygl_point(3,2);
-    tinygl_point_t b6 = tinygl_point(3,4);
-    tinygl_draw_line(b1,b2,1);
-    tinygl_draw_line(b3,b4,1);
-    tinygl_draw_line(b5,b6,1);
-}
-
-/** Turn off barrier when hit */
-
-void destory_barrier(uint8_t x_pos, uint8_t y_pos)
-{
-
-}
-
-/** Launch missile when callled*/
-void missile_launch(uint8_t row, uint8_t col)
-{
-
-}
-
-/** Actions after missile "sinal" received from other device TBD */
-void missile_receive()
-{
-
-} 
-
-/** Actions when missile hit an object(player or barrier, 
-     missiles will not collide as it would make the game too long)
-     TBD */
-void missile_hit()
-{
-
-}
-
-void display_player()
-{
-
-}
-
-/** Move gun/player when navswitch push */
-void player_move() 
-{
-
-}
-
-/** Display string when game over TBD */
-void game_over()
-{
+    missile.x -= 1;
+    tinygl_draw_point(missile,1);
 
 }
 
+// void display_player()
+// {
+
+// }
+
+// /** Move gun/player when navswitch push */
+// void player_move() 
+// {
+
+// }
+
+// /** Display string when game over TBD */
+// void game_over()
+// {
+
+// }
 
 
+tinygl_point_t get_pos(tinygl_point_t object)
+{
+    tinygl_point_t new_obj;
+    new_obj.x = object.x;
+    new_obj.y = object.y;
+    return new_obj;
+}
+
+game_object_t missile_initiate(void)
+{
+    tinygl_point_t pos = {0,0};
+    game_object_t missile = {MISSILE, IDLE, pos};
+    return missile;
+}
 
 
 
@@ -119,10 +146,12 @@ int main(void)
     navswitch_init();
     tinygl_init(1000);
     tinygl_point_t player = tinygl_point(4,3);
+    game_object_t missile = missile_initiate();
     //initiate_barriers();
     tinygl_draw_point(player,1);
 
     uint16_t navswitch_ticks = 0;
+    uint16_t missile_tick = 0;
 
 
 
@@ -138,11 +167,20 @@ int main(void)
         tinygl_update();
         navswitch_ticks++;
         
-        if (navswitch_ticks > 50)
-            {
-                navswitch_ticks = 0;
-                navswitch_update();
 
+
+        if (navswitch_ticks > 50)
+        {
+            navswitch_ticks = 0;
+            navswitch_update();
+
+            if (navswitch_push_event_p(NAVSWITCH_PUSH))
+            {
+                missile.pos = get_pos(player);
+                missile.pos.y -= 1;
+                tinygl_draw_point(missile.pos,1);
+                continue;
+            } else {
                 if (navswitch_push_event_p(NAVSWITCH_NORTH))
                 {
                     tinygl_draw_point(player,0);
@@ -161,8 +199,17 @@ int main(void)
                     player.x -= 1;
                 }
                 tinygl_draw_point(player,1);
-
             }
+
+        }
+        if (missile_tick > 500)
+        {
+            tinygl_draw_point(missile,0);
+            if (missile.status == 1)
+            {
+                missile_update(missile);
+            }
+        }
 
     }
 }
