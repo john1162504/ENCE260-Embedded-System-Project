@@ -109,30 +109,30 @@ typedef struct
 // }
 
 /** Move gun/player when navswitch push */
-void player_move() 
-{
-    if (navswitch_push_event_p(NAVSWITCH_NORTH)) {
-        tinygl_draw_point(player,0);
-        player.y -= 1;
-    } 
+// void player_move() 
+// {
+//     if (navswitch_push_event_p(NAVSWITCH_NORTH)) {
+//         tinygl_draw_point(player,0);
+//         player.y -= 1;
+//     } 
     
-    else if (navswitch_push_event_p(NAVSWITCH_EAST)) {
-        tinygl_draw_point(player,0);
-        player.x += 1;
-    } 
+//     else if (navswitch_push_event_p(NAVSWITCH_EAST)) {
+//         tinygl_draw_point(player,0);
+//         player.x += 1;
+//     } 
     
-    else if (navswitch_push_event_p(NAVSWITCH_SOUTH)) {
-        tinygl_draw_point(player,0);
-        player.y += 1;
-    } 
+//     else if (navswitch_push_event_p(NAVSWITCH_SOUTH)) {
+//         tinygl_draw_point(player,0);
+//         player.y += 1;
+//     } 
     
-    else if (navswitch_push_event_p(NAVSWITCH_WEST)) {
-        tinygl_draw_point(player,0);
-        player.x -= 1;
-    }
+//     else if (navswitch_push_event_p(NAVSWITCH_WEST)) {
+//         tinygl_draw_point(player,0);
+//         player.x -= 1;
+//     }
     
-    tinygl_draw_point(player,1); 
-}
+//     tinygl_draw_point(player,1); 
+// }
 
 // /** Display string when game over TBD */
 // void game_over()
@@ -154,6 +154,13 @@ game_object_t missile_initiate(void)
     tinygl_point_t pos = {0,0};
     game_object_t missile = {MISSILE, IDLE, pos};
     return missile;
+}
+
+void missile_update(game_object_t missile)
+{
+    tinygl_draw_point(missile.pos,0);
+    missile.pos.x -= 1;
+    tinygl_draw_point(missile.pos,1);
 }
 
 
@@ -206,11 +213,31 @@ int main(void)
                     continue;
                 }
             } else {
-                void player_move();
+                if (navswitch_push_event_p(NAVSWITCH_NORTH)) {
+                    tinygl_draw_point(player,0);
+                    player.y -= 1;
+                } 
+
+                else if (navswitch_push_event_p(NAVSWITCH_EAST)) {
+                    tinygl_draw_point(player,0);
+                    player.x += 1;
+                } 
+
+                else if (navswitch_push_event_p(NAVSWITCH_SOUTH)) {
+                    tinygl_draw_point(player,0);
+                    player.y += 1;
+                } 
+
+                else if (navswitch_push_event_p(NAVSWITCH_WEST)) {
+                    tinygl_draw_point(player,0);
+                    player.x -= 1;
+                }
+
+                tinygl_draw_point(player,1); 
             }
 
         }
-        if (missile_tick > 500)
+        if (missile_tick > 100)
         {
             missile_tick = 0;
             if (missile.status == 1)
