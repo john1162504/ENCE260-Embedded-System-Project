@@ -51,7 +51,22 @@ static pio_t cols[] =
 /** Initiate barriers at the start of the game */
 void initiate_barriers()
 {  
-    
+    tinygl_point_t b1 = tinygl_point(1,0);
+    tinygl_point_t b2 = tinygl_point(1,2);
+    tinygl_point_t b3 = tinygl_point(1,4);
+    tinygl_point_t b4 = tinygl_point(1,6);
+    tinygl_point_t b5 = tinygl_point(3,2);
+    tinygl_point_t b6 = tinygl_point(3,4);
+    tinygl_draw_line(b1,b2,1);
+    tinygl_draw_line(b3,b4,1);
+    tinygl_draw_line(b5,b6,1);
+}
+
+/** Turn off barrier when hit */
+
+void destory_barrier(uint8_t x_pos, uint8_t y_pos)
+{
+
 }
 
 /** Launch missile when callled*/
@@ -104,16 +119,10 @@ int main(void)
     navswitch_init();
     tinygl_init(1000);
     tinygl_point_t player = tinygl_point(4,3);
-    tinygl_point_t b1 = tinygl_point(1,0);
-    tinygl_point_t b2 = tinygl_point(1,2);
-    tinygl_point_t b3 = tinygl_point(1,4);
-    tinygl_point_t b4 = tinygl_point(1,6);
-    tinygl_point_t b5 = tinygl_point(3,2);
-    tinygl_point_t b6 = tinygl_point(3,4);
-    tinygl_pixel_set(player,1);
-    tinygl_draw_line(b1,b2,1);
-    tinygl_draw_line(b3,b4,1);
-    tinygl_draw_line(b5,b6,1);
+    //initiate_barriers();
+    tinygl_draw_point(player,1);
+
+    uint16_t navswitch_ticks = 0;
 
 
 
@@ -127,10 +136,33 @@ int main(void)
     {
         pacer_wait();
         tinygl_update();
+        navswitch_ticks++;
+        
+        if (navswitch_ticks > 50)
+            {
+                navswitch_ticks = 0;
+                navswitch_update();
 
+                if (navswitch_push_event_p(NAVSWITCH_NORTH))
+                {
+                    tinygl_draw_point(player,0);
+                    player.y -= 1;
+                } else if (navswitch_push_event_p(NAVSWITCH_EAST))
+                {
+                    tinygl_draw_point(player,0);
+                    player.x += 1;
+                } else if (navswitch_push_event_p(NAVSWITCH_SOUTH))
+                {
+                    tinygl_draw_point(player,0);
+                    player.y += 1;
+                } else if (navswitch_push_event_p(NAVSWITCH_WEST))
+                {
+                    tinygl_draw_point(player,0);
+                    player.x -= 1;
+                }
+                tinygl_draw_point(player,1);
 
-
-
+            }
 
     }
 }
