@@ -108,11 +108,31 @@ void missile_update(tinygl_point_t missile)
 
 // }
 
-// /** Move gun/player when navswitch push */
-// void player_move() 
-// {
-
-// }
+/** Move gun/player when navswitch push */
+void player_move() 
+{
+    if (navswitch_push_event_p(NAVSWITCH_NORTH)) {
+        tinygl_draw_point(player,0);
+        player.y -= 1;
+    } 
+    
+    else if (navswitch_push_event_p(NAVSWITCH_EAST)) {
+        tinygl_draw_point(player,0);
+        player.x += 1;
+    } 
+    
+    else if (navswitch_push_event_p(NAVSWITCH_SOUTH)) {
+        tinygl_draw_point(player,0);
+        player.y += 1;
+    } 
+    
+    else if (navswitch_push_event_p(NAVSWITCH_WEST)) {
+        tinygl_draw_point(player,0);
+        player.x -= 1;
+    }
+    
+    tinygl_draw_point(player,1); 
+}
 
 // /** Display string when game over TBD */
 // void game_over()
@@ -181,24 +201,7 @@ int main(void)
                 tinygl_draw_point(missile.pos,1);
                 continue;
             } else {
-                if (navswitch_push_event_p(NAVSWITCH_NORTH))
-                {
-                    tinygl_draw_point(player,0);
-                    player.y -= 1;
-                } else if (navswitch_push_event_p(NAVSWITCH_EAST))
-                {
-                    tinygl_draw_point(player,0);
-                    player.x += 1;
-                } else if (navswitch_push_event_p(NAVSWITCH_SOUTH))
-                {
-                    tinygl_draw_point(player,0);
-                    player.y += 1;
-                } else if (navswitch_push_event_p(NAVSWITCH_WEST))
-                {
-                    tinygl_draw_point(player,0);
-                    player.x -= 1;
-                }
-                tinygl_draw_point(player,1);
+                void player_move();
             }
 
         }
