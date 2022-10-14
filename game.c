@@ -182,15 +182,18 @@ game_object_t player_initiate(void)
 {
     tinygl_point_t start_pos = tinygl_point(4,3);
     game_object_t player = {PLAYER,ACTIVE,start_pos};
+    tinygl_draw_point(player.pos,1);
     return player;
 }
 
-void check_hit(game_object_t player, game_object_t incoming_missile)
+void check_hit(game_object_t* player, game_object_t* incoming_missile)
 {
-    if (player.pos.x == incoming_missile.pos.x && player.pos.y == incoming_missile.pos.y)
+    if (player->pos.x == incoming_missile->pos.x && player->pos.y == incoming_missile->pos.y)
     {
-        player.status = 0;
-        tinygl_draw_point(player.pos, 0);
+        player->status = 0;
+        tinygl_draw_point(player->pos, 0);
+        tinygl_draw_point(incoming_missile->pos, 0);
+        incoming_missile->status = 0;
     }
 }
 
@@ -214,7 +217,6 @@ int main(void)
     game_object_t missile = missile_initiate();
     game_object_t incoming_missile = missile_initiate();
     //initiate_barriers();
-    tinygl_draw_point(player.pos,1);
     uint16_t navswitch_ticks = 0;
     uint16_t missile_tick = 0;
     uint16_t ir_read_tick = 0;
@@ -312,7 +314,7 @@ int main(void)
                 tinygl_draw_point(incoming_missile.pos,0);
                 incoming_missile.pos.x += 1;
                 tinygl_draw_point(incoming_missile.pos,1);
-                check_hit(player, incoming_missile);
+                check_hit(&player, &incoming_missile);
                 if (incoming_missile.pos.x < 0) 
                 {
                     incoming_missile.status = 0;
