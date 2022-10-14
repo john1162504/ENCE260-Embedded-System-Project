@@ -16,6 +16,7 @@
 #include "ledmat.h"
 #include "display.h"
 #include "tinygl.h"
+#include "ir_uart.h"
 
 
 /** Define pacer frequency, runs n loop in one seond. Where n is the value of PACER_FREQUENCY */
@@ -237,7 +238,7 @@ int main(void)
             }
 
         }
-        if (missile_tick > 100)
+        if (missile_tick > 500)
         {
             missile_tick = 0;
             if (missile.status == 1)
