@@ -142,12 +142,12 @@ typedef struct
 // }
 
 
-tinygl_point_t get_pos(tinygl_point_t object)
+tinygl_point_t get_pos(game_object_t object)
 {
-    tinygl_point_t new_obj;
-    new_obj.x = object.x;
-    new_obj.y = object.y;
-    return new_obj;
+    tinygl_point_t point;
+    point.x = object.pos.x;
+    point.y = object.pos.y;
+    return point;
 }
 
 game_object_t missile_initiate(void)
@@ -178,6 +178,22 @@ void missile_send(tinygl_coord_t y)
 }
 
 
+game_object_t player_initiate(void)
+{
+    tinygl_point_t start_pos = tinygl_point(4,3);
+    game_object_t player = {PLAYER,ACTIVE,start_pos};
+    return player;
+}
+
+void check_hit(game_object_t player, game_object_t incoming_missile)
+{
+    if (player.pos.x == incoming_missile.pos.x && player.pos.y == incoming_missile.pos.y)
+    {
+        player.status = 0;
+        tinygl_draw_point(player.pos, 0);
+    }
+}
+
 
 // void missile_receive()
 // {
@@ -194,11 +210,11 @@ int main(void)
     navswitch_init();
     tinygl_init(1000);
     ir_uart_init();
-    tinygl_point_t player = tinygl_point(4,3);
+    game_object_t player = player_initiate();
     game_object_t missile = missile_initiate();
     game_object_t incoming_missile = missile_initiate();
     //initiate_barriers();
-    tinygl_draw_point(player,1);
+    tinygl_draw_point(player.pos,1);
     uint16_t navswitch_ticks = 0;
     uint16_t missile_tick = 0;
     uint16_t ir_read_tick = 0;
@@ -232,31 +248,30 @@ int main(void)
                 tinygl_draw_point(missile.pos,1);
                 missile_tick = 0;
                 }
-                else {
-                    continue;
-                }
             } else {
-                if (navswitch_push_event_p(NAVSWITCH_NORTH)) {
-                    tinygl_draw_point(player,0);
-                    player.y -= 1;
-                } 
+                if (player.status == 1) 
+                {
+                    if (navswitch_push_event_p(NAVSWITCH_NORTH)) {
+                        tinygl_draw_point(player.pos,0);
+                        player.pos.y -= 1;
+                    } 
 
-                else if (navswitch_push_event_p(NAVSWITCH_EAST)) {
-                    tinygl_draw_point(player,0);
-                    player.x += 1;
-                } 
+                    else if (navswitch_push_event_p(NAVSWITCH_EAST)) {
+                        tinygl_draw_point(player.pos,0);
+                        player.pos.x += 1;
+                    } 
 
-                else if (navswitch_push_event_p(NAVSWITCH_SOUTH)) {
-                    tinygl_draw_point(player,0);
-                    player.y += 1;
-                } 
+                    else if (navswitch_push_event_p(NAVSWITCH_SOUTH)) {
+                        tinygl_draw_point(player.pos,0);
+                        player.pos.y += 1;
+                    } 
 
-                else if (navswitch_push_event_p(NAVSWITCH_WEST)) {
-                    tinygl_draw_point(player,0);
-                    player.x -= 1;
+                    else if (navswitch_push_event_p(NAVSWITCH_WEST)) {
+                        tinygl_draw_point(player.pos,0);
+                        player.pos.x -= 1;
+                    }
+                    tinygl_draw_point(player.pos,1); 
                 }
-
-                tinygl_draw_point(player,1); 
             }
 
         }
@@ -298,6 +313,7 @@ int main(void)
                 tinygl_draw_point(incoming_missile.pos,0);
                 incoming_missile.pos.x += 1;
                 tinygl_draw_point(incoming_missile.pos,1);
+                check_hit(player, incoming_missile);
                 if (incoming_missile.pos.x < 0) 
                 {
                     incoming_missile.status = 0;
