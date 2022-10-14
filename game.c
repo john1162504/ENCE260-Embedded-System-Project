@@ -110,30 +110,29 @@ typedef struct
 // }
 
 /** Move gun/player when navswitch push */
-// void player_move() 
-// {
-//     if (navswitch_push_event_p(NAVSWITCH_NORTH)) {
-//         tinygl_draw_point(player,0);
-//         player.y -= 1;
-//     } 
-    
-//     else if (navswitch_push_event_p(NAVSWITCH_EAST)) {
-//         tinygl_draw_point(player,0);
-//         player.x += 1;
-//     } 
-    
-//     else if (navswitch_push_event_p(NAVSWITCH_SOUTH)) {
-//         tinygl_draw_point(player,0);
-//         player.y += 1;
-//     } 
-    
-//     else if (navswitch_push_event_p(NAVSWITCH_WEST)) {
-//         tinygl_draw_point(player,0);
-//         player.x -= 1;
-//     }
-    
-//     tinygl_draw_point(player,1); 
-// }
+void player_move(game_object_t* player) 
+{
+    if (navswitch_push_event_p(NAVSWITCH_NORTH)) {
+        tinygl_draw_point(player->pos,0);
+        player->pos.y -= 1;
+    } 
+
+    else if (navswitch_push_event_p(NAVSWITCH_EAST)) {
+        tinygl_draw_point(player->pos,0);
+        player->pos.x += 1;
+    } 
+
+    else if (navswitch_push_event_p(NAVSWITCH_SOUTH)) {
+        tinygl_draw_point(player->pos,0);
+        player->pos.y += 1;
+    } 
+
+    else if (navswitch_push_event_p(NAVSWITCH_WEST)) {
+        tinygl_draw_point(player->pos,0);
+        player->pos.x -= 1;
+    }
+    tinygl_draw_point(player->pos,1); 
+}
 
 // /** Display string when game over TBD */
 // void game_over()
@@ -252,26 +251,7 @@ int main(void)
             } else {
                 if (player.status == 1) 
                 {
-                    if (navswitch_push_event_p(NAVSWITCH_NORTH)) {
-                        tinygl_draw_point(player.pos,0);
-                        player.pos.y -= 1;
-                    } 
-
-                    else if (navswitch_push_event_p(NAVSWITCH_EAST)) {
-                        tinygl_draw_point(player.pos,0);
-                        player.pos.x += 1;
-                    } 
-
-                    else if (navswitch_push_event_p(NAVSWITCH_SOUTH)) {
-                        tinygl_draw_point(player.pos,0);
-                        player.pos.y += 1;
-                    } 
-
-                    else if (navswitch_push_event_p(NAVSWITCH_WEST)) {
-                        tinygl_draw_point(player.pos,0);
-                        player.pos.x -= 1;
-                    }
-                    tinygl_draw_point(player.pos,1); 
+                   player_move(&player); 
                 }
             }
 
