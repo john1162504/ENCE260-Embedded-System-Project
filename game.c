@@ -238,7 +238,6 @@ int main(void)
         {
             navswitch_ticks = 0;
             navswitch_update();
-
             if (navswitch_push_event_p(NAVSWITCH_PUSH))
             {
                 if (missile.status == 0) {
