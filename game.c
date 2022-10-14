@@ -164,6 +164,20 @@ void missile_update(game_object_t missile)
     tinygl_draw_point(missile.pos,1);
 }
 
+/** Take the x coordinate and send a char object repersent the coordinate of x */
+void missile_send(tinygl_coord_t x)
+{
+    char ch = 48 + x;
+    ir_uart_putc(ch);
+}
+
+
+
+// void missile_receive()
+// {
+
+// }
+
 
 
 int main(void)
@@ -173,16 +187,17 @@ int main(void)
     ledmat_init();
     navswitch_init();
     tinygl_init(1000);
+    ir_uart_init();
     tinygl_point_t player = tinygl_point(4,3);
     game_object_t missile = missile_initiate();
+    game_object_t incoming_missile = missile_initiate();
     //initiate_barriers();
     tinygl_draw_point(player,1);
 
     uint16_t navswitch_ticks = 0;
     uint16_t missile_tick = 0;
-
-
-
+    uint16_t ir_read_tick = 0;
+    uint16_t incoming_missile_tick = 0;
 
 
 
@@ -195,6 +210,8 @@ int main(void)
         tinygl_update();
         navswitch_ticks++;
         missile_tick++;
+        ir_read_tick++;
+        incoming_missile_tick++;
 
         if (navswitch_ticks > 50)
         {
@@ -249,9 +266,37 @@ int main(void)
                 if (missile.pos.x < 0) 
                 {
                     missile.status = 0;
+                    missile_send(missile.pos.y);
                 }
             }
         }
+        if (ir_read_tick > 100)
+        {
+            if (ir_uart_read_ready_p())
+            {
+                char num = ir_uart_getc();
+                if (num >= 48 && num < 55) {
+                    incoming_missile.status = 1;
+                    incoming_missile.pos = tinygl_point(5,num);
+                    tinygl_draw_point(missile.pos,1);
+                    incoming_missile_tick = 0;
+                }
 
+            }
+        }
+        if (incoming_missile_tick > 500)
+        {
+            incoming_missile_tick = 0;
+            if (incoming_missile.status == 1)
+            {   
+                tinygl_draw_point(incoming_missile.pos,0);
+                incoming_missile.pos.x += 1;
+                tinygl_draw_point(incoming_missile.pos,1);
+                if (incoming_missile.pos.x > 5) 
+                {
+                    incoming_missile.status = 0;
+                }
+            }
+        }
     }
 }
