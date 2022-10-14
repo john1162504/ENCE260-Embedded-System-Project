@@ -284,6 +284,7 @@ int main(void)
                     int num = ch - '0';
                     incoming_missile.status = 1;
                     incoming_missile.pos = tinygl_point(0,num);
+                    tinygl_draw_point(incoming_missile.pos,1);
                     incoming_missile_tick = 0;
                 }
 
