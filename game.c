@@ -165,9 +165,9 @@ void missile_update(game_object_t missile)
 }
 
 /** Take the x coordinate and send a char object repersent the coordinate of x */
-void missile_send(tinygl_coord_t x)
+void missile_send(tinygl_coord_t y)
 {
-    char ch = 48 + x;
+    char ch = 48 + y;
     ir_uart_putc(ch);
 }
 
@@ -274,25 +274,26 @@ int main(void)
         {
             if (ir_uart_read_ready_p())
             {
-                char num = ir_uart_getc();
-                if (num >= 48 && num < 55) {
+                char ch = ir_uart_getc();
+                if (ch >= 48 && ch < 55) {
+                    int num = ch - '0';
+                    printf("%d\n",num);
                     incoming_missile.status = 1;
-                    incoming_missile.pos = tinygl_point(5,num);
-                    tinygl_draw_point(missile.pos,1);
+                    incoming_missile.pos = tinygl_point(4,num);
                     incoming_missile_tick = 0;
                 }
 
             }
         }
-        if (incoming_missile_tick > 500)
+        if (incoming_missile.status == 1)
         {
-            incoming_missile_tick = 0;
-            if (incoming_missile.status == 1)
+            if (incoming_missile_tick > 500)
             {   
+                incoming_missile_tick = 0;
                 tinygl_draw_point(incoming_missile.pos,0);
-                incoming_missile.pos.x += 1;
+                incoming_missile.pos.x -= 1;
                 tinygl_draw_point(incoming_missile.pos,1);
-                if (incoming_missile.pos.x > 5) 
+                if (incoming_missile.pos.x < 0) 
                 {
                     incoming_missile.status = 0;
                 }
