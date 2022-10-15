@@ -131,22 +131,30 @@ void player_move(game_object_t* player)
 {
     if (navswitch_push_event_p(NAVSWITCH_NORTH)) {
         tinygl_draw_point(player->pos,0);
-        player->pos.y -= 1;
+        if (player->pos.y != 0) {
+            player->pos.y -= 1;
+        }
     } 
 
     else if (navswitch_push_event_p(NAVSWITCH_EAST)) {
         tinygl_draw_point(player->pos,0);
-        player->pos.x += 1;
+        if (player->pos.x != 4) {
+            player->pos.x += 1;
+        }
     } 
 
     else if (navswitch_push_event_p(NAVSWITCH_SOUTH)) {
         tinygl_draw_point(player->pos,0);
-        player->pos.y += 1;
+        if (player->pos.y != 6) {
+            player->pos.y += 1;
+        }
     } 
 
     else if (navswitch_push_event_p(NAVSWITCH_WEST)) {
         tinygl_draw_point(player->pos,0);
+        if (player->pos.x != 0) {
         player->pos.x -= 1;
+        }
     }
     tinygl_draw_point(player->pos,1); 
 }
