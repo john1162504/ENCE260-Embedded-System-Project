@@ -22,11 +22,14 @@
 
 /** Define pacer frequency, runs n loop in one seond. Where n is the value of PACER_FREQUENCY */
 #define PACER_FREQUENCY 1000
+#define NAV_POLL_RATE 100
+#define IR_POLL_RATE 100
+#define MSG_SPEED 15
+#define MISSILE_SPEED 500
 
 /** Define number of rows and columns */
-#define NUM_OF_ROW 7
-#define NUM_OF_COL 5
-typedef enum {PLAYER, BARRIER, MISSILE} Obejct_type;
+
+typedef enum {PLAYER, MISSILE} Obejct_type;
 typedef enum {IDLE = 0, ACTIVE = 1} State;
 
 typedef struct 
@@ -46,86 +49,30 @@ const char win_msg[] = "you win!\0";
 
 
 
-
-
-// /** Define PIO pins for led matrix */
-// static pio_t rows[] =
-// {
-//     LEDMAT_ROW1_PIO, LEDMAT_ROW2_PIO, LEDMAT_ROW3_PIO, LEDMAT_ROW4_PIO,
-//     LEDMAT_ROW5_PIO, LEDMAT_ROW6_PIO, LEDMAT_ROW7_PIO
-// };
-// static pio_t cols[] =
-// {
-//     LEDMAT_COL1_PIO, LEDMAT_COL2_PIO, LEDMAT_COL3_PIO,
-//     LEDMAT_COL4_PIO, LEDMAT_COL5_PIO
-// };
-
-
-
-// /** Initiate barriers at the start of the game */
-// void initiate_barriers(void)
-// {  
-//     tinygl_point_t b1 = tinygl_point(1,0);
-//     tinygl_point_t b2 = tinygl_point(1,2);
-//     tinygl_point_t b3 = tinygl_point(1,4);
-//     tinygl_point_t b4 = tinygl_point(1,6);
-//     tinygl_point_t b5 = tinygl_point(3,2);
-//     tinygl_point_t b6 = tinygl_point(3,4);
-//     tinygl_draw_line(b1,b2,1);
-//     tinygl_draw_line(b3,b4,1);
-//     tinygl_draw_line(b5,b6,1);
-// }
-
-// /** Turn off barrier when hit */
-
-// void destory_barrier(uint8_t x_pos, uint8_t y_pos)
-// {
-
-// }
-
-// /** Launch missile when callled*/
-// void missile_launch(uint8_t row, uint8_t col)
-// {
-
-// }
-
-// /** Actions after missile "sinal" received from other device TBD */
-// void missile_receive()
-// {
-
-// } 
-
-// /** Actions when missile hit an object(player or barrier, 
-//      missiles will not collide as it would make the game too long)
-//      TBD */
-// void missile_hit()
-// {
-
-// }
-
-// void missile_update(game_object_t missile)
-// {
-
-//     missile.pos.x -= 1;
-//     tinygl_draw_point(missile.pos,1);
-
-// }
-
-// void display_player()
-// {
-
-// }
-
-void game_start_screen(void)
+bool check_hit(game_object_t* player, game_object_t* incoming_missile)
 {
-    
+    if (player->pos.x == incoming_missile->pos.x && player->pos.y == incoming_missile->pos.y)
+    {
+        player->status = 0;
+        tinygl_draw_point(player->pos, 0);
+        tinygl_draw_point(incoming_missile->pos, 0);
+        incoming_missile->status = 0;
+        return 1;
+    }
+    else {
+        return 0;
+    }
+}
+
+tinygl_point_t get_pos(game_object_t object)
+{
+    tinygl_point_t point;
+    point.x = object.pos.x;
+    point.y = object.pos.y;
+    return point;
 }
 
 
-void game_finsih_screen(void)
-{
-
-}
 
 /** Move gun/player when navswitch push */
 void player_move(game_object_t* player) 
@@ -160,50 +107,8 @@ void player_move(game_object_t* player)
     tinygl_draw_point(player->pos,1); 
 }
 
-// /** Display string when game over TBD */
-// void game_over()
-// {
 
-// }
-
-
-tinygl_point_t get_pos(game_object_t object)
-{
-    tinygl_point_t point;
-    point.x = object.pos.x;
-    point.y = object.pos.y;
-    return point;
-}
-
-game_object_t missile_initiate(void)
-{
-    tinygl_point_t pos = {0,0};
-    game_object_t missile = {MISSILE, IDLE, pos};
-    return missile;
-}
-
-void missile_update(game_object_t missile)
-{
-    tinygl_draw_point(missile.pos,0);
-    missile.pos.x -= 1;
-    tinygl_draw_point(missile.pos,1);
-}
-
-/** Take the x coordinate and send a char object repersent the coordinate of x */
-void missile_send(tinygl_coord_t y)
-{
-    int8_t i = y - 6;
-    if (i < 0)
-    {
-        i *= -1;
-    }
-    int8_t coord = i;
-    char ch = 48 + coord;
-    ir_uart_putc(ch);
-}
-
-
-game_object_t player_initiate(void)
+game_object_t player_create(void)
 {
     tinygl_point_t start_pos = tinygl_point(4,3);
     game_object_t player = {PLAYER,ACTIVE,start_pos};
@@ -217,20 +122,86 @@ void player_reset(game_object_t* player)
     player->pos =  tinygl_point(4,3);
 }
 
-bool check_hit(game_object_t* player, game_object_t* incoming_missile)
+
+void game_start(game_object_t* player_ptr)
 {
-    if (player->pos.x == incoming_missile->pos.x && player->pos.y == incoming_missile->pos.y)
+    tinygl_clear();
+    player_reset(player_ptr);
+    GAME_STATE = 1;
+}
+
+void game_over(void)
+{
+    GAME_STATE = 0;
+    tinygl_text(game_over_msg);
+    ir_uart_putc('w');
+}
+
+
+
+
+game_object_t missile_create(void)
+{
+    tinygl_point_t pos = {0,0};
+    game_object_t missile = {MISSILE, IDLE, pos};
+    return missile;
+}
+
+void missile_launch(game_object_t* missile_ptr, tinygl_point_t pos)
+{
+    missile_ptr->status = 1;
+    missile_ptr->pos = pos;
+    missile_ptr->pos.x -= 1;
+    tinygl_draw_point(missile_ptr->pos,1);
+}
+
+/** Take the y coordinate and send a char object repersent the coordinate of y */
+void missile_send(tinygl_coord_t y)
+{
+    int8_t i = y - 6;
+    if (i < 0)
     {
-        player->status = 0;
-        tinygl_draw_point(player->pos, 0);
-        tinygl_draw_point(incoming_missile->pos, 0);
-        incoming_missile->status = 0;
-        return 1;
+        i *= -1;
     }
-    else {
-        return 0;
+    int8_t coord = i;
+    char ch = 48 + coord;
+    ir_uart_putc(ch);
+}
+
+void missile_update(game_object_t* missile_ptr)
+{
+    tinygl_draw_point(missile_ptr->pos,0);
+    missile_ptr->pos.x -= 1;
+    tinygl_draw_point(missile_ptr->pos,1);
+    if (missile_ptr->pos.x < 0) 
+    {
+        missile_ptr->status = 0;
+        missile_send(missile_ptr->pos.y);
     }
 }
+
+void incoming_missile_update(game_object_t* incoming_missile_ptr, game_object_t* player_ptr)
+{
+    tinygl_draw_point(incoming_missile_ptr->pos,0);
+    incoming_missile_ptr->pos.x += 1;
+    tinygl_draw_point(incoming_missile_ptr->pos,1);
+    if (check_hit(player_ptr, incoming_missile_ptr))
+    {
+        game_over();
+    }
+    if (incoming_missile_ptr->pos.x < 0) 
+    {
+        incoming_missile_ptr->status = 0;
+    }
+}
+
+
+
+
+
+
+
+
 
 
 
@@ -243,24 +214,30 @@ int main(void)
     pacer_init(PACER_FREQUENCY);
     ledmat_init();
     navswitch_init();
-    tinygl_init(1000);
+    ir_uart_init();
+
+
+
+    tinygl_init(PACER_FREQUENCY);
     tinygl_font_set(&font5x5_1);
-    tinygl_text_speed_set(10);
+    tinygl_text_speed_set(MSG_SPEED);
     tinygl_text_mode_set (TINYGL_TEXT_MODE_SCROLL);
     tinygl_text_dir_set(TINYGL_TEXT_DIR_ROTATE);
     tinygl_text(game_name);
 
 
     
-    ir_uart_init();
-    game_object_t player = player_initiate();
-    game_object_t missile = missile_initiate();
-    game_object_t incoming_missile = missile_initiate();
-    //initiate_barriers();
+    game_object_t player = player_create();
+    game_object_t missile = missile_create();
+    game_object_t incoming_missile = missile_create();
+
+
+
     uint16_t navswitch_ticks = 0;
     uint16_t missile_tick = 0;
     uint16_t ir_read_tick = 0;
     uint16_t incoming_missile_tick = 0;
+    uint16_t loop_count = 0;
 
 
 
@@ -272,105 +249,89 @@ int main(void)
         pacer_wait();
         tinygl_update();
         if (!GAME_STATE)
-            {
+        {
             navswitch_update();
-
             if (navswitch_push_event_p(NAVSWITCH_PUSH))
-                {
-                    tinygl_clear();
-                    player_reset(&player);
-                    GAME_STATE = 1;
-                }
+            {
+                game_start(&player);
+            }
                 
-            }
-        else {
-            navswitch_ticks++;
-            missile_tick++;
-            ir_read_tick++;
-            incoming_missile_tick++;
+        }
+        navswitch_ticks++;
+        missile_tick++;
+        ir_read_tick++;
+        incoming_missile_tick++;
+        loop_count++;
 
-            if (navswitch_ticks > 50)
+        if (navswitch_ticks >= NAV_POLL_RATE)
+        {
+            navswitch_ticks = 0;
+            navswitch_update();
+            if (navswitch_push_event_p(NAVSWITCH_PUSH))
             {
-                navswitch_ticks = 0;
-                navswitch_update();
-                if (navswitch_push_event_p(NAVSWITCH_PUSH))
+                if (missile.status == 0) 
                 {
-                    if (missile.status == 0) {
-                    missile.status = 1;
-                    missile.pos = get_pos(player);
-                    missile.pos.x -= 1;
-                    tinygl_draw_point(missile.pos,1);
-                    missile_tick = 0;
-                    }
-                } else {
-                    if (player.status == 1) 
-                    {
-                    player_move(&player); 
-                    }
-                }
-
-            }
-            if (missile_tick > 500)
-            {
                 missile_tick = 0;
-                if (missile.status == 1)
-                {   
-                    tinygl_draw_point(missile.pos,0);
-                    missile.pos.x -= 1;
-                    tinygl_draw_point(missile.pos,1);
-                    if (missile.pos.x < 0) 
-                    {
-                        missile.status = 0;
-                        missile_send(missile.pos.y);
-                    }
+                missile_launch(&missile,get_pos(player));
                 }
             }
-            if (ir_read_tick > 100)
+            else 
             {
-                if (ir_uart_read_ready_p())
+                if (player.status == 1) 
                 {
-                    char ch = ir_uart_getc();
-                    if (ch >= 48 && ch < 55) {
-                        int num = ch - '0';
-                        incoming_missile.status = 1;
-                        incoming_missile.pos = tinygl_point(0,num);
-                        tinygl_draw_point(incoming_missile.pos,1);
-                        if (check_hit(&player, &incoming_missile))
-                            {
-                                GAME_STATE = 0;
-                                tinygl_text(game_over_msg);
-                                ir_uart_putc('w');
-                            }
-                    incoming_missile_tick = 0;
-                    }
-                    if (ch == 'w')
-                    {
-                        tinygl_text(win_msg);
-                        GAME_STATE = 0;
-                    }
-
+                player_move(&player); 
                 }
             }
-            if (incoming_missile.status == 1)
-            {
-                if (incoming_missile_tick > 500)
-                {   
-                    incoming_missile_tick = 0;
-                    tinygl_draw_point(incoming_missile.pos,0);
-                    incoming_missile.pos.x += 1;
-                    tinygl_draw_point(incoming_missile.pos,1);
-                    if (check_hit(&player, &incoming_missile))
-                    {
-                        GAME_STATE = 0;
-                        tinygl_text(game_over_msg);
-                        ir_uart_putc('w');
-                    }
-                    if (incoming_missile.pos.x < 0) 
-                    {
-                        incoming_missile.status = 0;
-                    }
-                }
+
+        }
+        if (missile_tick >= MISSILE_SPEED)
+        {
+            missile_tick = 0;
+            if (missile.status == 1)
+            {   
+                missile_update(&missile);
             }
         }
+        if (ir_read_tick >= IR_POLL_RATE)
+        {
+            ir_read_tick = 0;
+            if (ir_uart_read_ready_p())
+            {
+                char msg = ir_uart_getc();
+                if (msg >= 48 && msg < 55) {
+                    int num = msg - '0';
+                    incoming_missile.status = 1;
+                    incoming_missile.pos = tinygl_point(0,num);
+                    tinygl_draw_point(incoming_missile.pos,1);
+                    if (check_hit(&player, &incoming_missile))
+                        {
+                            game_over();
+                        }
+                incoming_missile_tick = 0;
+                }
+                if (msg == 'w')
+                {
+                    tinygl_text(win_msg);
+                    GAME_STATE = 0;
+                }
+
+            }
+        }
+        if (incoming_missile.status == 1)
+        {
+            if (incoming_missile_tick >= MISSILE_SPEED)
+            {   
+                incoming_missile_tick = 0;
+                incoming_missile_update(&incoming_missile, &player);
+            }
+        }
+        // if (loop_count >= PACER_FREQUENCY)
+        // {
+        //     loop_count = 0;
+        //     if ((MISSILE_SPEED - 50) > 100 )
+        //     {
+        //         MISSILE_SPEED -= 50;
+        //     }
+        // }
     }
 }
