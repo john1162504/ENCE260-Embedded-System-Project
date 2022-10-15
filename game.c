@@ -25,7 +25,6 @@
 #define NAV_POLL_RATE 100
 #define IR_POLL_RATE 100
 #define MSG_SPEED 15
-#define MISSILE_SPEED 500
 
 /** Define number of rows and columns */
 
@@ -44,6 +43,7 @@ static bool GAME_STATE = 0;
 const char game_name[] = "CS0.16\0";
 const char game_over_msg[] = "GG\0";
 const char win_msg[] = "you win!\0";
+uint16_t missile_speed = 500;
 
 
 
@@ -132,6 +132,7 @@ void game_start(game_object_t* player_ptr)
 
 void game_over(void)
 {
+    missile_speed = 500;
     GAME_STATE = 0;
     tinygl_text(game_over_msg);
     ir_uart_putc('w');
@@ -257,81 +258,85 @@ int main(void)
             }
                 
         }
-        navswitch_ticks++;
-        missile_tick++;
-        ir_read_tick++;
-        incoming_missile_tick++;
-        loop_count++;
-
-        if (navswitch_ticks >= NAV_POLL_RATE)
+        else 
         {
-            navswitch_ticks = 0;
-            navswitch_update();
-            if (navswitch_push_event_p(NAVSWITCH_PUSH))
+            navswitch_ticks++;
+            missile_tick++;
+            ir_read_tick++;
+            incoming_missile_tick++;
+            loop_count++;
+
+            if (navswitch_ticks >= NAV_POLL_RATE)
             {
-                if (missile.status == 0) 
+                navswitch_ticks = 0;
+                navswitch_update();
+                if (navswitch_push_event_p(NAVSWITCH_PUSH))
                 {
+                    if (missile.status == 0) 
+                    {
+                    missile_tick = 0;
+                    missile_launch(&missile,get_pos(player));
+                    }
+                }
+                else 
+                {
+                    if (player.status == 1) 
+                    {
+                    player_move(&player); 
+                    }
+                }
+
+            }
+            if (missile_tick >= missile_speed)
+            {
                 missile_tick = 0;
-                missile_launch(&missile,get_pos(player));
+                if (missile.status == 1)
+                {   
+                    missile_update(&missile);
                 }
             }
-            else 
+            if (ir_read_tick >= IR_POLL_RATE)
             {
-                if (player.status == 1) 
+                ir_read_tick = 0;
+                if (ir_uart_read_ready_p())
                 {
-                player_move(&player); 
+                    char msg = ir_uart_getc();
+                    if (msg >= 48 && msg < 55) {
+                        int num = msg - '0';
+                        incoming_missile.status = 1;
+                        incoming_missile.pos = tinygl_point(0,num);
+                        tinygl_draw_point(incoming_missile.pos,1);
+                        if (check_hit(&player, &incoming_missile))
+                            {
+                                game_over();
+                            }
+                    incoming_missile_tick = 0;
+                    }
+                    if (msg == 'w')
+                    {
+                        tinygl_text(win_msg);
+                        GAME_STATE = 0;
+                        missile_speed = 500;
+                    }
+
                 }
             }
-
-        }
-        if (missile_tick >= MISSILE_SPEED)
-        {
-            missile_tick = 0;
-            if (missile.status == 1)
-            {   
-                missile_update(&missile);
-            }
-        }
-        if (ir_read_tick >= IR_POLL_RATE)
-        {
-            ir_read_tick = 0;
-            if (ir_uart_read_ready_p())
+            if (incoming_missile.status == 1)
             {
-                char msg = ir_uart_getc();
-                if (msg >= 48 && msg < 55) {
-                    int num = msg - '0';
-                    incoming_missile.status = 1;
-                    incoming_missile.pos = tinygl_point(0,num);
-                    tinygl_draw_point(incoming_missile.pos,1);
-                    if (check_hit(&player, &incoming_missile))
-                        {
-                            game_over();
-                        }
-                incoming_missile_tick = 0;
+                if (incoming_missile_tick >= missile_speed)
+                {   
+                    incoming_missile_tick = 0;
+                    incoming_missile_update(&incoming_missile, &player);
                 }
-                if (msg == 'w')
+            }
+            if (loop_count >= PACER_FREQUENCY)
+            {
+                loop_count = 0;
+                if ((missile_speed - 25) > 50 )
                 {
-                    tinygl_text(win_msg);
-                    GAME_STATE = 0;
+                    missile_speed -= 25;
                 }
-
             }
         }
-        if (incoming_missile.status == 1)
-        {
-            if (incoming_missile_tick >= MISSILE_SPEED)
-            {   
-                incoming_missile_tick = 0;
-                incoming_missile_update(&incoming_missile, &player);
-            }
-        }
-        // if (loop_count >= PACER_FREQUENCY)
-        // {
-        //     loop_count = 0;
-        //     if ((MISSILE_SPEED - 50) > 100 )
-        //     {
-        //         MISSILE_SPEED -= 50;
-        //     }
-        // }
     }
 }
