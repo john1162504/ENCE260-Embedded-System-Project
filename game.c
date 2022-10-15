@@ -38,9 +38,8 @@ typedef struct
 } game_object_t;
 
 static bool GAME_STATE = 0;
-const char game_name[] = "CS0.16\0";
-const char game_over_msg[] = "GG\0";
-const char win_msg[] = "you win!\0";
+const char game_name[] = "CS0.16";
+const char game_over_msg[] = "GG";
 
 
 
@@ -234,6 +233,10 @@ bool check_hit(game_object_t* player, game_object_t* incoming_missile)
 
 
 
+// void missile_receive()
+// {
+
+// }
 
 
 
@@ -263,6 +266,17 @@ int main(void)
     uint16_t incoming_missile_tick = 0;
 
 
+    // while (1)
+    // {
+    //     pacer_wait();
+    //     tinygl_update();
+    //     navswitch_update();
+    //     if (navswitch_push_event_p(NAVSWITCH_PUSH))
+    //         {
+    //             tinygl_clear();
+    //         }
+
+    // }
 
 
 
@@ -335,18 +349,7 @@ int main(void)
                         incoming_missile.status = 1;
                         incoming_missile.pos = tinygl_point(0,num);
                         tinygl_draw_point(incoming_missile.pos,1);
-                        if (check_hit(&player, &incoming_missile))
-                            {
-                                GAME_STATE = 0;
-                                tinygl_text(game_over_msg);
-                                ir_uart_putc('w');
-                            }
-                    incoming_missile_tick = 0;
-                    }
-                    if (ch == 'w')
-                    {
-                        tinygl_text(win_msg);
-                        GAME_STATE = 0;
+                        incoming_missile_tick = 0;
                     }
 
                 }
@@ -363,7 +366,6 @@ int main(void)
                     {
                         GAME_STATE = 0;
                         tinygl_text(game_over_msg);
-                        ir_uart_putc('w');
                     }
                     if (incoming_missile.pos.x < 0) 
                     {
