@@ -49,14 +49,14 @@ uint16_t missile_speed = 500;
 
 
 
-bool check_hit(game_object_t* player, game_object_t* incoming_missile)
+bool check_hit(game_object_t* player_ptr, game_object_t* incoming_missile_ptr)
 {
-    if (player->pos.x == incoming_missile->pos.x && player->pos.y == incoming_missile->pos.y)
+    if (player_ptr->pos.x == incoming_missile_ptr->pos.x && player_ptr->pos.y == incoming_missile_ptr->pos.y)
     {
-        player->status = 0;
-        tinygl_draw_point(player->pos, 0);
-        tinygl_draw_point(incoming_missile->pos, 0);
-        incoming_missile->status = 0;
+        player_ptr->status = 0;
+        tinygl_draw_point(player_ptr->pos, 0);
+        tinygl_draw_point(incoming_missile_ptr->pos, 0);
+        incoming_missile_ptr->status = 0;
         return 1;
     }
     else {
@@ -75,36 +75,36 @@ tinygl_point_t get_pos(game_object_t object)
 
 
 /** Move gun/player when navswitch push */
-void player_move(game_object_t* player) 
+void player_move(game_object_t* player_ptr) 
 {
     if (navswitch_push_event_p(NAVSWITCH_NORTH)) {
-        tinygl_draw_point(player->pos,0);
-        if (player->pos.y != 0) {
-            player->pos.y -= 1;
+        tinygl_draw_point(player_ptr->pos,0);
+        if (player_ptr->pos.y != 0) {
+            player_ptr->pos.y -= 1;
         }
     } 
 
     else if (navswitch_push_event_p(NAVSWITCH_EAST)) {
-        tinygl_draw_point(player->pos,0);
-        if (player->pos.x != 4) {
-            player->pos.x += 1;
+        tinygl_draw_point(player_ptr->pos,0);
+        if (player_ptr->pos.x != 4) {
+            player_ptr->pos.x += 1;
         }
     } 
 
     else if (navswitch_push_event_p(NAVSWITCH_SOUTH)) {
-        tinygl_draw_point(player->pos,0);
-        if (player->pos.y != 6) {
-            player->pos.y += 1;
+        tinygl_draw_point(player_ptr->pos,0);
+        if (player_ptr->pos.y != 6) {
+            player_ptr->pos.y += 1;
         }
     } 
 
     else if (navswitch_push_event_p(NAVSWITCH_WEST)) {
-        tinygl_draw_point(player->pos,0);
-        if (player->pos.x != 0) {
-        player->pos.x -= 1;
+        tinygl_draw_point(player_ptr->pos,0);
+        if (player_ptr->pos.x != 0) {
+        player_ptr->pos.x -= 1;
         }
     }
-    tinygl_draw_point(player->pos,1); 
+    tinygl_draw_point(player_ptr->pos,1); 
 }
 
 
@@ -116,10 +116,10 @@ game_object_t player_create(void)
     return player;
 }
 
-void player_reset(game_object_t* player) 
+void player_reset(game_object_t* player_ptr) 
 {
-    player->status = 1;
-    player->pos =  tinygl_point(4,3);
+    player_ptr->status = 1;
+    player_ptr->pos =  tinygl_point(4,3);
 }
 
 
