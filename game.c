@@ -190,7 +190,7 @@ void incoming_missile_update(game_object_t* incoming_missile_ptr, game_object_t*
     {
         game_over();
     }
-    if (incoming_missile_ptr->pos.x < 0) 
+    if (incoming_missile_ptr->pos.x > 4) 
     {
         incoming_missile_ptr->status = 0;
     }
@@ -298,27 +298,30 @@ int main(void)
             if (ir_read_tick >= IR_POLL_RATE)
             {
                 ir_read_tick = 0;
-                if (ir_uart_read_ready_p())
+                if (incoming_missile.status == 0)
                 {
-                    char msg = ir_uart_getc();
-                    if (msg >= 48 && msg < 55) {
-                        int num = msg - '0';
-                        incoming_missile.status = 1;
-                        incoming_missile.pos = tinygl_point(0,num);
-                        tinygl_draw_point(incoming_missile.pos,1);
-                        if (check_hit(&player, &incoming_missile))
-                            {
-                                game_over();
-                            }
-                    incoming_missile_tick = 0;
-                    }
-                    if (msg == 'w')
+                    if (ir_uart_read_ready_p()) 
                     {
-                        tinygl_text(win_msg);
-                        GAME_STATE = 0;
-                        missile_speed = 500;
-                    }
+                        char msg = ir_uart_getc();
+                        if (msg >= 48 && msg < 55) {
+                            int num = msg - '0';
+                            incoming_missile.status = 1;
+                            incoming_missile.pos = tinygl_point(0,num);
+                            tinygl_draw_point(incoming_missile.pos,1);
+                            if (check_hit(&player, &incoming_missile))
+                                {
+                                    game_over();
+                                }
+                        incoming_missile_tick = 0;
+                        }
+                        if (msg == 'w')
+                        {
+                            tinygl_text(win_msg);
+                            GAME_STATE = 0;
+                            missile_speed = 500;
+                        }
 
+                    }
                 }
             }
             if (incoming_missile.status == 1)
