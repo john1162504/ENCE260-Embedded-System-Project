@@ -19,26 +19,16 @@
 #include "tinygl.h"
 #include "ir_uart.h"
 #include "../fonts/font5x5_1.h"
+#include "object_type.h"
+#include "missile.h"
+#include "player.h"
 
 
 /* GLOBAL DEFINITIONS */
 #define PACER_FREQUENCY 1000     // Define pacer frequency, runs n loop in one seond. Where n is the value of PACER_FREQUENCY
 #define NAV_POLL_RATE 100        // Defining navswitch frequency
 #define IR_POLL_RATE 100         // Defining the IR poll rate
-#define MSG_SPEED 15             // Scroll speed of the message
-
-
-/* DEFINING TYPES */
-typedef enum {PLAYER, MISSILE} Obejct_type;     // Defining object types as either a missile or player
-typedef enum {IDLE = 0, ACTIVE = 1} State;      // Defining State as either active or idle in an enum
-
-typedef struct 
-{
-    Obejct_type type;
-    State status;
-    tinygl_point_t pos;
-
-} game_object_t;               // Struct of the object. Contains its type, status and position         
+#define MSG_SPEED 15             // Scroll speed of the message       
 
 
 /* OTHER VARIABLES */
@@ -50,7 +40,7 @@ uint16_t missile_speed = 500;            // Initial speed of the missile
 
 
 
-// FUNCTIONS ****************************************************************************************************************
+// GAME FUNCTIONS ************************************************************************************************************
 
 
 /** Checks whether a missile hits the player
@@ -70,73 +60,6 @@ bool check_hit(game_object_t* player_ptr, game_object_t* incoming_missile_ptr)
     else {
         return 0;
     }
-}
-
-
-/** Gets the position of a game object through coordinates
-    @param game object
-    @return a point */
-tinygl_point_t get_pos(game_object_t object)
-{
-    tinygl_point_t point;
-    point.x = object.pos.x;
-    point.y = object.pos.y;
-    return point;
-}
-
-
-/** Moves the player using the navswitch
-    @param pointer of the player */
-void player_move(game_object_t* player_ptr) 
-{
-    if (navswitch_push_event_p(NAVSWITCH_NORTH)) {
-        tinygl_draw_point(player_ptr->pos,0);
-        if (player_ptr->pos.y != 0) {
-            player_ptr->pos.y -= 1;
-        }
-    } 
-
-    else if (navswitch_push_event_p(NAVSWITCH_EAST)) {
-        tinygl_draw_point(player_ptr->pos,0);
-        if (player_ptr->pos.x != 4) {
-            player_ptr->pos.x += 1;
-        }
-    } 
-
-    else if (navswitch_push_event_p(NAVSWITCH_SOUTH)) {
-        tinygl_draw_point(player_ptr->pos,0);
-        if (player_ptr->pos.y != 6) {
-            player_ptr->pos.y += 1;
-        }
-    } 
-
-    else if (navswitch_push_event_p(NAVSWITCH_WEST)) {
-        tinygl_draw_point(player_ptr->pos,0);
-        if (player_ptr->pos.x != 0) {
-        player_ptr->pos.x -= 1;
-        }
-    }
-    tinygl_draw_point(player_ptr->pos,1); 
-}
-
-
-/** Creates a player
-    @return player object */
-game_object_t player_create(void)
-{
-    tinygl_point_t start_pos = tinygl_point(4,3);
-    game_object_t player = {PLAYER,ACTIVE,start_pos};
-    tinygl_draw_point(player.pos,1);
-    return player;
-}
-
-
-/** Resets the player
-    @param player pointer */
-void player_reset(game_object_t* player_ptr) 
-{
-    player_ptr->status = 1;
-    player_ptr->pos =  tinygl_point(4,3);
 }
 
 
@@ -160,75 +83,8 @@ void game_over(void)
 }
 
 
-/** Creates a missile
-    @return a missile object type */
-game_object_t missile_create(void)
-{
-    tinygl_point_t pos = {0,0};
-    game_object_t missile = {MISSILE, IDLE, pos};
-    return missile;
-}
 
-
-/** Lauches the missile
-    @param pointer of the missile
-    @param position of the missile */
-void missile_launch(game_object_t* missile_ptr, tinygl_point_t pos)
-{
-    missile_ptr->status = 1;
-    missile_ptr->pos = pos;
-    missile_ptr->pos.x -= 1;
-    tinygl_draw_point(missile_ptr->pos,1);
-}
-
-
-/** Sends a missile to other funkit
-    uses flipped_y to account for the funkit orientation
-    @param y-coordinate of the missile */
-void missile_send(tinygl_coord_t y)
-{
-    int8_t flipped_y = (y - 6) * -1;
-    char ch = 48 + flipped_y;
-    ir_uart_putc(ch);
-}
-
-
-/** Updates the missile 
-    @param Missile pointer */
-void missile_update(game_object_t* missile_ptr)
-{
-    tinygl_draw_point(missile_ptr->pos,0);
-    missile_ptr->pos.x -= 1;
-    tinygl_draw_point(missile_ptr->pos,1);
-    if (missile_ptr->pos.x < 0) 
-    {
-        missile_ptr->status = 0;
-        missile_send(missile_ptr->pos.y);
-    }
-}
-
-
-/** Gets the position of a game object through coordinates
-    @param game object
-    @return a point */
-void incoming_missile_update(game_object_t* incoming_missile_ptr, game_object_t* player_ptr)
-{
-    tinygl_draw_point(incoming_missile_ptr->pos,0);
-    incoming_missile_ptr->pos.x += 1;
-    tinygl_draw_point(incoming_missile_ptr->pos,1);
-    if (check_hit(player_ptr, incoming_missile_ptr))
-    {
-        game_over();
-    }
-    if (incoming_missile_ptr->pos.x > 4) 
-    {
-        incoming_missile_ptr->status = 0;
-    }
-}
-
-
-
-// MAIN *************************************************************************************************************************
+// MAIN ***********************************************************************************************************************
 
 
 int main(void)
@@ -366,7 +222,15 @@ int main(void)
                 if (incoming_missile_tick >= missile_speed)
                 {   
                     incoming_missile_tick = 0;
-                    incoming_missile_update(&incoming_missile, &player);
+                    incoming_missile_update(&incoming_missile);
+                    if (check_hit(&player, &incoming_missile))
+                    {
+                        game_over();
+                    }
+                    if (incoming_missile.pos.x > 4) 
+                    {
+                        incoming_missile.status = 0;
+                    }
                 }
             }
             

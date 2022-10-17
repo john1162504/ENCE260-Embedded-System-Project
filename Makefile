@@ -16,7 +16,7 @@ all: game.out
 
 
 # Compile: create object files from C source files.
-game.o: game.c ../../drivers/avr/system.h ../../drivers/display.h ../../drivers/navswitch.h ../../drivers/led.h ../../drivers/avr/pio.h ../../utils/pacer.h ../../utils/tinygl.h ../../drivers/avr/ir_uart.h ../../fonts/font5x5_1.h
+game.o: game.c ../../drivers/avr/system.h ../../drivers/display.h ../../drivers/navswitch.h ../../drivers/led.h ../../drivers/avr/pio.h ../../utils/pacer.h ../../utils/tinygl.h ../../drivers/avr/ir_uart.h ../../fonts/font5x5_1.h object_type.h
 	$(CC) -c $(CFLAGS) $< -o $@
 
 system.o: ../../drivers/avr/system.c ../../drivers/avr/system.h
@@ -61,12 +61,20 @@ timer0.o: ../../drivers/avr/timer0.c ../../drivers/avr/bits.h ../../drivers/avr/
 prescale.o: ../../drivers/avr/prescale.c ../../drivers/avr/prescale.h ../../drivers/avr/system.h
 	$(CC) -c $(CFLAGS) $< -o $@
 
+object_type.o: object_type.c object_type.h ../../utils/tinygl.h ../../drivers/avr/system.h
+	$(CC) -c $(CFLAGS) $< -o $@
+
+missile.o: missile.c missile.h ../../utils/tinygl.h ../../drivers/avr/system.h object_type.h ../../drivers/avr/ir_uart.h
+	$(CC) -c $(CFLAGS) $< -o $@
+
+player.o: player.c player.h ../../utils/tinygl.h ../../drivers/avr/system.h object_type.h ../../drivers/navswitch.h
+	$(CC) -c $(CFLAGS) $< -o $@
 
 
 
 
 # Link: create ELF output file from object files.
-game.out: game.o system.o pio.o display.o ledmat.o navswitch.o pacer.o led.o timer.o tinygl.o font.o ir_uart.o timer0.o usart1.o prescale.o
+game.out: game.o system.o pio.o display.o ledmat.o navswitch.o pacer.o led.o timer.o tinygl.o font.o ir_uart.o timer0.o usart1.o prescale.o object_type.o missile.o player.o
 	$(CC) $(CFLAGS) $^ -o $@ -lm
 	$(SIZE) $@
 
@@ -82,5 +90,3 @@ clean:
 program: game.out
 	$(OBJCOPY) -O ihex game.out game.hex
 	dfu-programmer atmega32u2 erase; dfu-programmer atmega32u2 flash game.hex; dfu-programmer atmega32u2 start
-
-
