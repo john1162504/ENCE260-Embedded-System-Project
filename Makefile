@@ -1,6 +1,6 @@
 # File:   Makefile
 # Author: John Chan Jack Barton
-# Date:   12 Sep 2010
+# Date:   10 Oct 2022
 # Descr:  Makefile for game
 
 # Definitions.
