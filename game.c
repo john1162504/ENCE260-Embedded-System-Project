@@ -57,7 +57,8 @@ bool check_hit(game_object_t* player_ptr, game_object_t* incoming_missile_ptr)
         incoming_missile_ptr->status = 0;
         return 1;
     }
-    else {
+    else 
+    {
         return 0;
     }
 }
@@ -192,7 +193,8 @@ int main(void)
                     if (ir_uart_read_ready_p()) 
                     {
                         char msg = ir_uart_getc();
-                        if (msg >= 48 && msg < 55) {
+                        if (msg >= 48 && msg < 55) 
+                        {
                             int num = msg - '0';
                             incoming_missile.status = 1;
                             incoming_missile.pos = tinygl_point(0,num);
@@ -217,9 +219,9 @@ int main(void)
             }
             
             /* Updates the missile position */
-            if (incoming_missile.status == 1)
+            if (incoming_missile_tick >= missile_speed)
             {
-                if (incoming_missile_tick >= missile_speed)
+                if (incoming_missile.status == 1)
                 {   
                     incoming_missile_tick = 0;
                     incoming_missile_update(&incoming_missile);
