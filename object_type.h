@@ -30,7 +30,9 @@ typedef struct
 } game_object_t;
 
 
-/* Gets the position of a game object through coordinates */
+/** Gets the position of a game object through coordinates
+    @param game object
+    @return a point */
 tinygl_point_t get_pos(game_object_t object);
 
 
