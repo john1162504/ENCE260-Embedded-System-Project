@@ -15,30 +15,38 @@
     @param pointer of the player */
 void player_move(game_object_t* player_ptr) 
 {
-    if (navswitch_push_event_p(NAVSWITCH_NORTH)) {
+    if (navswitch_push_event_p(NAVSWITCH_NORTH)) 
+    {
         tinygl_draw_point(player_ptr->pos,0);
-        if (player_ptr->pos.y != 0) {
+        if (player_ptr->pos.y != 0) 
+        {
             player_ptr->pos.y -= 1;
         }
     } 
 
-    else if (navswitch_push_event_p(NAVSWITCH_EAST)) {
+    else if (navswitch_push_event_p(NAVSWITCH_EAST)) 
+    {
         tinygl_draw_point(player_ptr->pos,0);
-        if (player_ptr->pos.x != 4) {
+        if (player_ptr->pos.x != 4) 
+        {
             player_ptr->pos.x += 1;
         }
     } 
 
-    else if (navswitch_push_event_p(NAVSWITCH_SOUTH)) {
+    else if (navswitch_push_event_p(NAVSWITCH_SOUTH)) 
+    {
         tinygl_draw_point(player_ptr->pos,0);
-        if (player_ptr->pos.y != 6) {
+        if (player_ptr->pos.y != 6) 
+        {
             player_ptr->pos.y += 1;
         }
     } 
 
-    else if (navswitch_push_event_p(NAVSWITCH_WEST)) {
+    else if (navswitch_push_event_p(NAVSWITCH_WEST)) 
+    {
         tinygl_draw_point(player_ptr->pos,0);
-        if (player_ptr->pos.x != 0) {
+        if (player_ptr->pos.x != 0) 
+        {
         player_ptr->pos.x -= 1;
         }
     }
