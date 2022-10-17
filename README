@@ -1,0 +1,17 @@
+When this program is compiled and downloaded onto the UCFK4, a two player shooting game
+is able to be played.
+
+When "make program" is typed into the terminal (this directory), ther LED matrix on the 
+funkit will display the message "CS0.16" which is the name of the game. If the navswitch 
+is pushed down, then the game commences. Using NSEW on the navswitch you will be able to
+control your "player" and shoot missiles using the navswitch push down.
+
+Orienting two funkits so that their infrared transmitters and receivers are alligned, 
+you will be able to play the two-player game. This means that the missile can travel onto
+your opponents funkit. The aim of the game is to shoot your missile and hit your opponent 
+on the other funkit. As time goes by, the rate and speed of the missile shots increase
+which makes it more difficult to dodge.
+
+If you eventually, get hit, you lose. The funkit lets you know about this by displaying the 
+scrolling message "GGEZ". If you win, you will get the message "youwin!" If you wish to play
+the game again, you and your opponent can push down on the navswitch.
