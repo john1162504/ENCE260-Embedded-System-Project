@@ -14,15 +14,18 @@
 #include "navswitch.h"
 
 
-/* Moves the player using the navswitch */
+/** Moves the player using the navswitch
+    @param pointer of the player */
 void player_move(game_object_t* player_ptr);
 
 
-/* Creates a player */
+/** Creates a player
+    @return player object */
 game_object_t player_create(void);
 
 
-/* Resets the player */
+/** Resets the player
+    @param player pointer */
 void player_reset(game_object_t* player_ptr) ;
 
 
