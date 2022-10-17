@@ -1,5 +1,5 @@
 # File:   Makefile
-# Author: M. P. Hayes, UCECE
+# Author: John Chan Jack Barton
 # Date:   12 Sep 2010
 # Descr:  Makefile for game
 
@@ -61,12 +61,15 @@ timer0.o: ../../drivers/avr/timer0.c ../../drivers/avr/bits.h ../../drivers/avr/
 prescale.o: ../../drivers/avr/prescale.c ../../drivers/avr/prescale.h ../../drivers/avr/system.h
 	$(CC) -c $(CFLAGS) $< -o $@
 
+# Including object_type module
 object_type.o: object_type.c object_type.h ../../utils/tinygl.h ../../drivers/avr/system.h
 	$(CC) -c $(CFLAGS) $< -o $@
 
+# Including missile module
 missile.o: missile.c missile.h ../../utils/tinygl.h ../../drivers/avr/system.h object_type.h ../../drivers/avr/ir_uart.h
 	$(CC) -c $(CFLAGS) $< -o $@
 
+# Including player module
 player.o: player.c player.h ../../utils/tinygl.h ../../drivers/avr/system.h object_type.h ../../drivers/navswitch.h
 	$(CC) -c $(CFLAGS) $< -o $@
 
